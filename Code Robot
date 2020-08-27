@@ -1,0 +1,26 @@
+#include <khepera/khepera.h>,<signal.h>;
+#include <stdio.h>,<string.h>,<sys/socket.h>;
+#include <arpa/inet.h>,<unistd.h>;
+
+static knet_dev_t$*$dsPic; // Robot PIC microcontroller
+int main(int argc, char $*$argv[]){
+...// Define variables and Server Socket
+...// Server Socket is listening (192.168.0.111:8080)
+...// Accept connection from an incoming client
+...// Initiate libkhepera and robot access
+...// Open robot socket, store the handle in its ptr 
+...// Initialize the motors with tuned parameters
+
+ // Receive a msg from client
+while((read_size=recv(client_sock,client_msg,4,0))>0){
+  // Execute received velocities
+  write(client_sock,client_msg,strlen(client_msg));
+  vLeft=client_msg[0]-'0';
+  vRight=client_msg[1]-'0';
+  printf("%i %i \n",vLeft,vRight);
+  kh4_SetMode(kh4RegSpeedProfile,dsPic);
+  kh4_set_speed(vLeft*10,vRight*10,dsPic);
+  close(socket_desc);
+ }
+ ... // If an erroneous msg received rise an error msg 
+ ... // If some button is pressed program stops
