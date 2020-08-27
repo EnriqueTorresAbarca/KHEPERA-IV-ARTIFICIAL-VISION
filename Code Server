@@ -1,0 +1,80 @@
+import re,os,sys,cv2,numpy as np
+import threading,argparse,time,urllib,socket
+ ... # Variables and parameters definition
+ ... # Creating client Socket (port 8080)
+ ... # Loading trained cascade classifiers 
+while rval:
+ # Read the image from the robot
+ # Execute cascade classifiers with the image
+ stops=stop_csc.detMulSc(scframe,1.05,5,
+                            0,(1,1),(500,500))
+ airport=airport_csc.detMulSc(scframe,1.15,
+                            5,0,(1,1),(500,500))
+ rArrow=rArrow_csc.detMulSc(np.rot90(scframe,2),
+                            1.1,5,0,(1,1),(500,500))
+ lArrow=lArrow_csc.detMulSc(scframe,1.1,5,0,
+                            (1,1),(500,500))
+ Yield=yield_csc.detMulSc(scframe,1.1,5,0,(1,1),
+                            (500,500))
+ signs=CLASSIFIER.detMulSc(scframe,1.2,5,0,(1,1),
+                            (500,500))
+ ... # Depending on the detected signal 
+     # its area is calculated
+ ... # Speed limits are calculated using Flann technique        
+ # Time of action of the signal     
+ if time.time()-time_stop<5: state="STOP"
+ elif time.time()-time_TurnL<5: state="TURN LEFT"
+ elif time.time()-time_TurnR<5: state="TURN RIGHT"
+ else: state="GO"
+ if state == "GO":       
+  # Calculate the center of the track
+  hsvTrac=cv2.cvtColor(imagenTrac,cv2.COLOR_BGR2HSV)
+  low_white=np.array([65,85,150],dtype=np.uint8)
+  high_white=np.array([79,90,380],dtype=np.uint8)
+  # Creating the Mask
+  maskTrac=cv2.inRange(hsvTrac,low_white,high_white)
+  momentsTrac=cv2.moments(maskTrac)
+  areaTrac=momentsTrac['m00']
+  if(areaTrac > 200):
+   xTrac=int(momentsTrac['m10']/momentsTrac['m00'])
+   yTrac=int(momentsTrac['m01']/momentsTrac['m00'])
+   cv2.rectangle(imagenTrac,(xTrac,yTrac),
+                        (xTrac+2,yTrac+2),(0,0,255),2)
+  # Calculate the velocities for each signal                                
+  if abs(xTrac-192/2) < 5: 
+        v_left=int(int(lastlimit)/14), 
+        v_right=int(int(lastlimit)/14)
+  elif xTrac > 144: 
+       v_left=int(int(lastlimit)/14),  
+       v_right=int(int(lastlimit)/56)
+  elif xTrac < 192/4: 
+       v_left=int(int(lastlimit)/56),  
+       v_right=int(int(lastlimit)/14)   
+  # Else, turn to the right or to the left
+  elif xTrac > 192/2:
+       v_left=int(int(lastlimit)/14), 
+       v_right=int(int(lastlimit)/28)
+  elif xTrac < 192/2: 
+       v_left=int(int(lastlimit)/28), 
+       v_right=int(int(lastlimit)/14)
+  cv2.imshow('Mask', maskTrac)
+  elif state == "SLOW":  
+       v_left=int(int(lastlimit)/28), 
+       v_right=int(int(lastlimit)/28)
+  elif state == "STOP": v_left=0, v_right=0
+  elif state == "WAIT": v_left=0, v_right=0
+  elif state == "YIELD": 
+       v_left=int(int(lastlimit)/28),  
+       v_right=int(int(lastlimit)/28)
+  elif state == "TURN LEFT":
+       v_left=0, v_right=int(int(lastlimit)/14)
+  elif state == "TURN RIGHT": 
+       v_left=int(int(lastlimit)/14), v_right=0
+  # Velocities converted and send them to the robot
+  # Sending the velocities to the robot
+  cv2.putText(origframe,"Current speed limit:"
+                         +str(lastlimit)+"km/h.",(5,20),
+          cv2.FONT_HERSHEY_SIMPLEX,0.45,(255,255,255),1)
+  cv2.imshow("preview",frame)
+  k=cv2.waitKey(30) & 0xff
+  if k == 27: break
